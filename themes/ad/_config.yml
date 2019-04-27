@@ -88,7 +88,7 @@ reward:
     src: /images/wechat.png
     alt: "WeChat"
   -
-    src: /images/alipay.png
+    src: /images/alipay.jpg
     alt: "AliPay"
 
 nav:
