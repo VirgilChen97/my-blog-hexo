@@ -554,11 +554,6 @@ main {
       .passage-article h1 a, .passage-article h2 a, .passage-article h3 a, .passage-article h4 a, .passage-article h5 a, .passage-article h6 a {
         padding-left: 5px;
         transition: all .15s linear; }
-      .passage-article h1::before, .passage-article h2::before, .passage-article h3::before, .passage-article h4::before, .passage-article h5::before, .passage-article h6::before {
-        font-size: 0.8em;
-        content: "\f0c1";
-        color: #F4511E;
-        font-family: FontAwesome; }
       .passage-article h1:hover a, .passage-article h2:hover a, .passage-article h3:hover a, .passage-article h4:hover a, .passage-article h5:hover a, .passage-article h6:hover a {
         padding-left: 10px; }
       .passage-article h1:hover::before, .passage-article h2:hover::before, .passage-article h3:hover::before, .passage-article h4:hover::before, .passage-article h5:hover::before, .passage-article h6:hover::before {
@@ -567,13 +562,13 @@ main {
       font-size: 2em;
       margin: 16px 0; }
     .passage-article h2 {
-      font-size: 1.75em; }
-    .passage-article h3 {
       font-size: 1.5em; }
+    .passage-article h3 {
+      font-size: 1.2em; }
     .passage-article h4 {
-      font-size: 1.25em; }
+      font-size: 1em; }
     .passage-article h5 {
-      font-size: 1.125em; }
+      font-size: 1em; }
     .passage-article h6 {
       font-size: 1em; }
     .passage-article p {
