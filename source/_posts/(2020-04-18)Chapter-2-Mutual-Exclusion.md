@@ -3,6 +3,7 @@ title: Chapter 2 Mutual Exclusion
 date: 2020-04-18 22:48:20
 tags: Multi-core Concurrent Programming
 categories: 课程笔记
+mathjax: true
 ---
 # 时间表示
 
@@ -11,6 +12,8 @@ categories: 课程笔记
 一个线程 $A$ 会产生一系列的事件 $a_0$, $a_1$, 因为在程序中有许多的循环，因此我们把 $a_i$ 这一事件的第 $j$ 次发生记作 $a_i^j$. 如果事件 $a$ 发生在事件 $b$ 之前，那我们记作 $a\rightarrow b$.
 
 我们把在线程 $A$ 上一个区间 $(a_0, a_1)$ 内的时间表示为  $I_A$, 如果  $I_A \rightarrow I_B$, 那么  $a_1 \rightarrow b_0$。
+
+<!--more-->
 
 # Critical Sections
 
@@ -71,22 +74,14 @@ class Filter implements Lock{
         for(int i = 1; i < n; i++){
             level[me] = i; // 我对这一等待区感兴趣
             victim[i] = me; // 其他人先
-            while(check(i)){};
-        }
-    }
-    public boolean check(int me, int level){
-        boolean res = false;
-        for(int i = 0; i < n; i++){
-            if(i == me){
-                continue;
-            }else{
-                // 在之后层数的人没走，并且自己是本层留下来的人的时候，等待
-                if(level[i] >= level && victim[level] == me){
-                    res = true;
-                }
+            for(int k = 0; k < n; k++){
+                while(k!=me && level[k] >= i && victim[i] == me){}
             }
         }
-        return res;
+    }
+
+    public void unlock() {
+        level[ThreadID.get()] = 0;
     }
 }
 ```
@@ -104,9 +99,9 @@ Starvation-freedom 只能保证每个获取Lock的线程最终能够获取到Loc
 
 如果一个锁是FIFO的，那么它满足
 
- If $D_A^j \rightarrow D_B^k$, then $CS_A^j \rightarrow CS_B^k$
+If $D_A^j \rightarrow D_B^k$, then $CS_A^j \rightarrow CS_B^k$
 
- # Bakery Algorithm
+# Bakery Algorithm
 
  一个FIFO的锁
 
