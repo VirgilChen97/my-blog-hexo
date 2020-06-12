@@ -169,4 +169,55 @@ public class AtomicSRSWRegister<T> implements Register<T> {
 }
 ```
 
-## 
+## MRSW Atomic Register
+
+在我们搭建 SRSW Atomic Register 的时候，我们是通过一个 `lastStamp` 和 `lastRead` 变量，让读取到最新值的Reader去帮助其他reader获取最新的值。而在MRSW版本中我们延续了这个思想。让先读取到的Reader帮助其他Reader获取最新的值。具体解释在代码中。
+
+```java
+public class AtomicMRSWRegister<T> implements Register<T> {
+    ThreadLocal<Long> lastStamp; // 最新时间戳
+    private StampedValue<T>[][] a_table; // 每一个值都存在 SRSW atomic 寄存器中
+    public AtomicMRSWRegister(T init, int readers) {
+        lastStamp = new ThreadLocal<Long>() {
+            protected Long initialValue() { return 0; };
+        };
+
+        // 使用一个 reader * reader 大小的数组
+        a_table = (StampedValue<T>[][]) new StampedValue[readers][readers];
+
+        // 初始化
+        StampedValue<T> value = new StampedValue<T>(init);
+        for (int i = 0; i < readers; i++) {
+            for (int j = 0; j < readers; j++) {
+                a_table[i][j] = value;
+            }
+        }
+    }
+
+    public void write(T v) {
+        long stamp = lastStamp.get() + 1; // 时间戳++
+        lastStamp.set(stamp); // 设置最新时间戳
+        StampedValue<T> value = new StampedValue<T>(stamp, v);
+        for (int i = 0; i < a_table.length; i++) {
+            a_table[i][i] = value; // 将对角线上的寄存器依次写入新值
+        }
+    }
+
+    public T read(){
+        int me = ThreadID.get();
+        StampedValue<T> value = a_table[me][me]; // 首先读取自己对应位置的StampedValue
+
+        // 纵向寻求其他Reader的帮助，看他们是否有获取到更新的值
+        for (int i = 0; i < a_table.length; i++) {
+            value = StampedValue.max(value, a_table[i][me]);
+        }
+
+        // 横向覆盖最新值帮助其他Reader，其他Reader纵向扫描就可以扫描到
+        for (int i = 0; i < a_table.length; i++) {
+            if (i == me) continue;
+            a_table[me][i] = value;
+        }
+
+        return value
+    }
+```
