@@ -21,6 +21,8 @@ server:
     address: www.example.com
 ```
 
+<!--more-->
+
 **支持的数据结构**
 
 1. 字面量
@@ -317,14 +319,28 @@ Hero{name='Ashe8a1189c9-2740-4b6e-b85b-14de42bdfb42', atk=-156092609, def=20, is
 
 可以观察到生成的UUID，随机整数的ATK，以及和ATK相同的Waepon ATK。由于 `hero.at` 这个属性不存在，`weapon.def` 被设置成了默认值10。
 
-## Profile
+## 7. Profile
 
-在实际开发过程中经常牵涉到不同环境的切换（生产/开发/测试）。
+在实际开发过程中经常牵涉到不同环境的切换（生产/开发/测试）。共有两种方法可以实现多profile。
 
+当使用properties文件时，我们可以使用 `application-{profile name}.properties` 来实现多profile配置，例如 `application-dev.properties` 代表开发环境。
 
+当使用yaml文件时，我们可以使用yaml的文档块来实现多profile，例如：
 
+```yaml
+server: 
+    port: 8081
+spring: 
+    profiles: dev
 
+---
 
+server: 
+    port: 80
+spring: 
+    profiles: prod
+```
 
+在启动项目时，加上 `-spring.profiles.active={profile name}` 即可在profile之间切换。
 
 

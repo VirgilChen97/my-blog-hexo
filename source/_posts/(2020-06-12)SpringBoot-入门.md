@@ -37,6 +37,8 @@ categories: 找工作
                         └── DemoApplicationTests.java
 ```
 
+<!--more-->
+
 ## 2. 编写一个新的controller
 
 我们在 `com.cyf.demo` 下创建一个新的 `controller` 包。新建 `HelloController` 类。内容如下：
