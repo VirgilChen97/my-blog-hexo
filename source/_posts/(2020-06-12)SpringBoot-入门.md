@@ -66,10 +66,10 @@ public class HelloController {
 
 可以看到Tomcat自动启动，服务已经跑起来了
 
-![](img/(2020-06-12)SpringBoot-入门.md/2020-06-12-17-29-30.png)
+![](/img/(2020-06-12)SpringBoot-入门.md/2020-06-12-17-29-30.png)
 
 此时在浏览器访问 `localhost:8080/hello`
 
-![](img/(2020-06-12)SpringBoot-入门.md/2020-06-12-17-30-34.png)
+![](/img/(2020-06-12)SpringBoot-入门.md/2020-06-12-17-30-34.png)
 
 可以看到返回了我们在新建的Controller中定义的字符串
