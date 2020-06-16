@@ -126,7 +126,7 @@ public class Hero {
 
 此时我们得到了一条提示：
 
-![](img/2020-06-12-18-09-24.png)
+![](img/(2020-06-12)SpringBoot-配置文件.md/2020-06-12-18-09-24.png)
 
 这是因为我们并没有在 Maven 中添加 SpringBoot 的注解处理器，根据官方文档，我们在 `pom.xml` 中添加：
 
@@ -268,7 +268,7 @@ public class HelloService {
 
 当我们尝试在单元测试中注入 `HelloService` 时， 会发选 Idea 已经提示我们无法找到这个bean：
 
-![](/img/2020-06-12-21-32-51.png)
+![](/img/(2020-06-12)SpringBoot-配置文件.md/2020-06-12-21-32-51.png)
 
 通常我们会编写一个配置文件来导入这个包，但是现在我们通过配置类的方式。在我们的 `com.cyf.demo` 包下创建一个新的 `config` 包，新建 `HelloConfig` 类：
 
