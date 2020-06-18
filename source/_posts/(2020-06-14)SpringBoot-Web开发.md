@@ -11,7 +11,7 @@ categories: 找工作
 
 # Spring Boot 静态资源映射
 
-在以往的SpringMVC中，我们会将静态资源文件储存在WEBAPP中，但是在SpringBoot中则有所不同。
+在以往的SpringMVC中，我们会将静态资源文件储存在WEBAPP中，但是在SpringBoot中则有所不同。开始前使用 Spring Initializer 新建一个 restful-api 的项目。勾选 web, Spring Data JPA, MySQL 模块.
 
 ## 1. `/webjars/**`: jar包形式存在的静态资源
 
@@ -120,7 +120,7 @@ public class HelloController {
 
 ## 引入静态资源
 
-首先讲我们实验的 [基础代码](https://drive.google.com/file/d/1jtvP4I8anneabwiIyyNy4FTJnVSZm_D3/view?usp=sharing) 复制到项目中。将 `dao` 和 `entities` 复制到项目中，这里我使用 Spring Initializer 新建了一个 restful-api的项目。同时将我们的 html, css, js 文件导入项目。完成后目录的结构如下：
+将我们的 html, css, js 文件导入项目。完成后目录的结构如下：
 
 ```
 src
@@ -129,14 +129,6 @@ src
 │   │   └── com
 │   │       └── cyf
 │   │           └── restfulapi
-│   │               ├── controller
-│   │               │   └── HelloController.java
-│   │               ├── dao
-│   │               │   ├── DepartmentDao.java
-│   │               │   └── EmployeeDao.java
-│   │               ├── entities
-│   │               │   ├── Department.java
-│   │               │   └── Employee.java
 │   │               └── RestfulApiApplication.java
 │   └── resources
 │       ├── application.properties
@@ -159,7 +151,6 @@ src
 │           ├── dashboard.html
 │           ├── index.html
 │           ├── list.html
-│           └── success.html
 └── test
     └── java
         └── com
@@ -187,8 +178,8 @@ public class MyMvcConfig {
          WebMvcConfigurer webMvcConfigurer = new WebMvcConfigurer() {
              @Override
              public void addViewControllers(ViewControllerRegistry registry) {
-                registry.addViewController("/").setViewName("main");
-                 registry.addViewController("/index.htm;").setViewName("main");
+                registry.addViewController("/").setViewName("login");
+                 registry.addViewController("/index.htm;").setViewName("login");
              }
          };
          return webMvcConfigurer;
@@ -198,7 +189,7 @@ public class MyMvcConfig {
 
 访问项目地址，你会发现默认载入的已经是 `login.html` 了。接下来还有的问题是咱们的几个html页面都是基于 Bootstrap 实现的，我们可以发现在我们的静态资源文件夹中也有和Bootstrap相关的js文件。我们之前讲过我们可以通过webjar的形式来引入静态资源，因此我们同样可以通过webjar来引入Bootstrap的相关依赖。
 
-```
+```xml
 <dependency>
     <groupId>org.webjars</groupId>
     <artifactId>bootstrap</artifactId>
@@ -316,7 +307,96 @@ public LocaleResolver localeResolver(){
 
 ## 登录
 
-未完待续
+我们首先不考虑安全的实现一个简单的登录功能，用户在页面中输入用户名和密码，如果在数据库中存在用户名和密码，则用户登录成功，进入详情页面。否则提示用户登录失败。首先我们修改我们的登录页，添加表单的提交地址，并且为username 和 password 添加 name 属性：
+
+```html
+<form class="form-signin" action="dashboard.html" th:action="@{/api/session}" method="post">
+    ...
+    <input type="text" class="form-control" placeholder="Username" name="username" th:placeholder="#{login.username}" required="" autofocus="">
+    ...
+    <input type="password" class="form-control" placeholder="Password" name="password" th:placeholder="#{login.password}" required="">
+    ...
+</form>
+```
+
+接下来在 entity 包下创建 User 类，加上JPA注解以及Getter，Setter：
+
+```java
+@Entity
+public class User {
+
+    @Id // 主键
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(unique = true, nullable = false) // 非空，唯一
+    private String username;
+
+    @Column(nullable = false)
+    private String password;
+    private String email;
+}
+```
+
+在 Repository 包下创建 UserRepository 接口：
+
+```java
+public interface UserRepository extends JpaRepository<User, Integer> {
+    /*
+
+    */
+    public User findByUsername(String username);
+}
+```
+
+我们在接口里增加了一个方法 `findByUsername()`，这里的方法名指定了查询条件，对于这个方法，Spring Data JPA 会自动为我们生成相应的查询语句而无需我们做任何实现，具体的方法命名规则参考 [官方文档](https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#jpa.query-methods.query-creation)。就此我们的数据访问就已经完成，在application.yml中添加数据库的相应配置以及启用generate-ddl，运行项目，让Spring Data自动为我们在数据库中创建User表。在User表中添加一个用户用于测试：
+
+![](/img/(2020-06-14)SpringBoot-Web开发.md/2020-06-17-22-27-02.png)
+
+接下来编写Controller，在controller包下创建 `LoginController`:
+
+```java
+@Controller
+@RequestMapping("/api")
+public class LoginController {
+
+    @Autowired
+    UserRepository userRepository;
+
+    @PostMapping("/session")
+    public String login(@RequestParam("username") String username,
+                        @RequestParam("password") String password,
+                        Map<String, String> map){
+        // 根据用户名获取用户
+        User loginUser = userRepository.findByUsername(username);
+        // 用户存在 对比密码
+        if(loginUser!= null && loginUser.getPassword().equals(password)){
+            return "dashboard";
+        }else{
+            map.put("msg", "用户名密码错误");
+            return "login";
+        }
+    }
+}
+```
+
+然后在 `login.html` 中的Please Sign in 下添加如下一行，添加密码错误时的错误提示：
+
+```html
+...
+<p style="color: darkred" th:text="${msg}" th:if="${not #strings.isEmpty(msg)}"></p>
+...
+```
+
+现在尝试登录，访问 `localhost:8080`，并输入错误的用户名和密码：
+
+![](img/(2020-06-14)SpringBoot-Web开发.md/2020-06-17-22-34-00.png)
+
+再尝试正确的密码，发现成功跳转到了dashboard页面。
+
+
+
+
 
 
 
