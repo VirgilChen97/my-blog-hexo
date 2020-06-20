@@ -1,8 +1,9 @@
 ---
 title: SpringBoot Web 开发
-date: 2020-06-14 13:03:37
+date: 2020-06-16 13:03:37
 tags: Spring, SpringBoot
 categories: 找工作
+toc: true
 ---
 
 在写这篇笔记之前我也有很多思考，我参考的教程中有很多SpringMVC以及JSP，模板引擎的内容。貌似现在的开发大环境下，后端需要兼顾手机App和网页版共同的请求，前后端分离是大的趋势。但是我仍然准备学习一下传统的服务器端渲染的相关技术。一方面是感受一下技术的演进，另一方面是前后端分离不利于SEO（Serach Engine Optimization），很多现有的产品仍然使用服务器渲染的原因就是搜索引擎。虽然现在可能会有一些更加成熟的方案（nodejs作为中间层），但是咱们还是一步一步来。
@@ -393,6 +394,158 @@ public class LoginController {
 ![](img/(2020-06-14)SpringBoot-Web开发.md/2020-06-17-22-34-00.png)
 
 再尝试正确的密码，发现成功跳转到了dashboard页面。
+
+## 拦截器
+
+现在如果我们在dashboard界面刷新，你会发现浏览器提示我们是否需要重新提交表单。这是因为刷新时浏览器会重新发送我们登录时的Post请求。为了防止重复提交，我们修改为重定向的方式来让用户到达dashboard页面。观察我们之前的请求，用户登录成功后，浏览器的url栏显示的时我们post地址的url，而修改为重定向后，浏览器则会跳转到我们重定向的url。
+
+首先修改 `HelloController`：
+
+```java
+if(loginUser!= null && loginUser.getPassword().equals(password)){
+    session.setAttribute("loginUser", loginUser.getId());
+    // return "dashboard"
+    return "redirect:/main";
+}
+```
+
+在用户登录成功后，我们将用户重定向到 `/main`，也就是说浏览器会向 `/main` 发送一次请求，因此我们将 dashboard视图绑定到 `/main`, 修改 `MyMvcConfig` 配置类中我们之前实现的 `WebMvcConfigurator`：
+
+```java
+public void addViewControllers(ViewControllerRegistry registry) {
+    registry.addViewController("/").setViewName("login");
+    registry.addViewController("/index.html").setViewName("login");
+    // 重定向 /main 到视图 dashboard
+    registry.addViewController("/main").setViewName("dashboard");
+}
+```
+
+此时再次登录，你会发现浏览器会自动跳转到 `localhost:8080/main`，并且刷新浏览器也不会再提示需要重新提交表单。但是此时你会发现一个问题，就是如果此时我们在其他浏览器中直接访问 `localhost:8080/main`，便跳过了登陆直接进入了dashboard，这是我们不希望看到的，因此我们需要拦截那些未登录用户的请求，这里就用到了拦截器。首先我们要做的是识别一个用户的登录状态，修改 `LoginContoller` 中的 login 方法：
+
+```java
+@PostMapping("/session")
+public String login(@RequestParam("username") String username,
+                    @RequestParam("password") String password,
+                    Map<String, String> map,
+                    // 传入session
+                    HttpSession session){
+    User loginUser = userRepository.findByUsername(username);
+    if(loginUser!= null && loginUser.getPassword().equals(password)){
+        // 将登录用户的id保存在session中
+        session.setAttribute("loginUser", loginUser.getId());
+        return "redirect:/main";
+    }else{
+        map.put("msg", "用户名密码错误");
+        return "login";
+    }
+}
+```
+
+此时我们就可以判断session中是否有 `loginUser` 这个attribute来判断用户是否登录，接下来我们就可以开始编写我们的拦截器，在 component 包下新建 `LoginHandlerInterceptor` 类:
+
+```java
+public class LoginHandlerInterceptor implements HandlerInterceptor {
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 取出 loginUser
+        Object loginUserId = request.getSession().getAttribute("loginUser");
+        if(loginUserId != null){
+            // 若存在，则用户已登录，放行请求
+            return true;
+        }else{
+            // 若不存在，重定向用户到登录页面
+            request.getRequestDispatcher("/index.html").forward(request, response);
+        }
+        return false;
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+
+    }
+
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
+
+    }
+}
+```
+
+该类实现了 `HandlerInterceptor` 接口，这个接口有三个方法，当容器收到一个请求后，如果满足条件，则会在controller方法执行前先执行 `preHandle` 方法，该方法的返回值是一个布尔值，代表的是是否拦截该请求。接下来修改配置类，将我们自定义的拦截器添加进容器。修改 `MyMvcConfig` 类，之前我们在该类中添加了一个返回 `WebMvcConfigurator` 的方法，我们在该方法中编写了一个 `WebMvcConfigurator` 的匿名实现类用于重定向的配置，现在我们为这个类添加一个新的方法：
+
+```java
+public WebMvcConfigurer webMvcConfigurer(){
+    WebMvcConfigurer webMvcConfigurer = new WebMvcConfigurer() {
+        @Override
+        public void addViewControllers(ViewControllerRegistry registry) {
+            registry.addViewController("/").setViewName("login");
+            registry.addViewController("/index.html").setViewName("login");
+            registry.addViewController("/main").setViewName("dashboard");
+        }
+
+        @Override
+        public void addInterceptors(InterceptorRegistry registry) {
+            registry.addInterceptor(new LoginHandlerInterceptor())
+                    // 拦截所有请求
+                    .addPathPatterns("/**") 
+                    // 排除登录页面和登录请求的拦截
+                    .excludePathPatterns("/index.html","/","/api/session")
+                    // 排除静态资源的拦截
+                    .excludePathPatterns("/asserts/**", "/webjars/**");
+        }
+    };
+    return webMvcConfigurer;
+}
+```
+
+这样未登录的用户就只能登录请求页面和发送登录请求，对于服务器其他url的访问都会被拦截器拦截，并且强制跳转到登录页面。现在，我们再尝试在另一个浏览器访问 `localhost:8080/main`，会发现直接跳转到了登录界面。
+
+## 错误处理
+
+为了方便测试，我们先关闭拦截器，注释掉相应代码。如果此时访问一个项目中不存在的地址，我们会得到一个默认的错误页面：
+
+![](/img/(2020-06-14)SpringBoot-Web开发.md/2020-06-19-19-44-54.png)
+
+如果此时我们使用Postman向服务器像一个不存在的地址发送请求，我们会得到一个json数据：
+
+![](/img/(2020-06-14)SpringBoot-Web开发.md/2020-06-19-19-47-18.png)
+
+SpringBoot 会根据请求头中的 `Accept:` 属性来决定做出哪种请求相应。SpringBoot是如何实现的呢？我们查看 `ErrorMvcAutoConfiguration` 自动配置类发现，SpringBoot自动为我们配置了以下几个组件：
+
+- `ErrorPageCustomizer`：当服务器发生错误时，重定向到错误请求 (`/error`)
+- `BasicErrorController`：处理错误请求的Controller，读取请求头的 `Accept:` 决定调用的方法类型
+- `DefaultErrorViewResolver`： `BasicErrorController` 会通过 ErrorViewResolver接口来找到需要返回的视图，`DefaultErrorViewResolver` 就是Spring默认的实现。该实现会首先尝试模板引擎是否有适用于错误的 View，如果没有则会去静态资源目录找静态资源，如果都没有则返回null
+- `DefaultErrorAttributes`：当使用模板引擎的时候，我们可以获取错误相关的参数，而 `ErrorAttributes` 接口则定义了获取错误参数的行为，`DefaultErrorAttributes` 就是SpringBoot的默认是实现，其中我们可以获取到的参数有：
+    - `timestamp`：时间戳
+    - `status`：状态码
+    - `error`：错误提示
+    - `exception`：异常对象
+    - `message`：异常消息
+    - `errors`：JSR303数据校验错误
+
+对原理有了一定了解后，我们就知道如何定制我们的错误页面了。对于定制 HTML 错误页面，我们只需要讲错误页面的模板放在模板文件的 `error/` 目录下，就会自动调用。例如如果发生了404错误，那么Spring就会去找 `error/404.html` 这个模板，对于其他错误，Spring都会寻找 `error/{错误状态码}.html`。你也可以通过 `4xx.html` 来响应所有的 4xx 错误。现在尝试在 `templates` 文件夹中创建 `error` 文件夹，把 404.html 移动到 `error`，修改404.html，尝试取出错误参数：
+
+```html
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+    <h1>status: [[${status}]]</h1>
+    <h2>Timestamp: [[${timestamp}]]</h2>
+    <p>Error: [[${error}]]</p>
+</main>
+```
+
+此时再次访问不存在的地址：
+
+![](/img/(2020-06-14)SpringBoot-Web开发.md/2020-06-19-20-26-13.png)
+
+已经变成了我们定制的错误页面。
+
+未完待续
+
+
+
+
+
+
 
 
 
