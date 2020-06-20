@@ -5,9 +5,7 @@ tags: Spring, SpringBoot
 categories: 找工作
 ---
 
-# SpringBoot 日志
-
-## 1. 简介
+# 1. 简介
 
 ### 常见日志框架
 
@@ -16,6 +14,8 @@ categories: 找工作
 | JCL, SLF4j, jboss-logging | log4j, java.util.logging, log4j2, logback |
 
 我们需要一个抽象层 + 一个日志实现，通常使用 SLF4j + Logback。SpringBoot本身使用的便是这种组合
+
+<!--more-->
 
 ### SLF4j 如何使用
 
@@ -39,7 +39,7 @@ public class HelloWorld {
 2. 为了解决各种框架日志不统一，通过适配器模式 (`jcl-over-slf4j`, `jul-over-slf4j`)将其他的日志框架调用转换为了 SLF4j
 3. 引入新框架后，应该讲该框架的默认日志**排除**掉，让框架使用SpringBoot的转换
 
-## 2. 使用
+# 2. 使用
 
 我们直接在我们的单元测试中尝试使用logger。首先修改测试类
 

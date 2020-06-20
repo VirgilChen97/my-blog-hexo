@@ -4,10 +4,7 @@ date: 2020-06-12 17:49:12
 tags: Spring, SpringBoot
 categories: 找工作
 ---
-
-# Spring Boot 配置
-
-## 1. yaml 语法
+# 1. yaml 语法
 
 **基本语法**：
 
@@ -64,7 +61,7 @@ server:
     people: {cat, dog, pig}
     ```
 
-## 2. 获取配置文件的值 （@ConfigurationProperties）
+# 2. 获取配置文件的值 （@ConfigurationProperties）
 
 首先我们在 `com.cyf.demo.bean` 包下创建一个新的 `Hero` 类：
 
@@ -163,7 +160,7 @@ Hero{name='Ashe', atk=20, def=20, isAlive=null, abilities={bomb=20, shotgun=10},
 
 也就是说Spring成功的获取了我们配置文件中的值并注入到了对应的类中。
 
-## 3. 获取配置文件的值 （@Value）
+# 3. 获取配置文件的值 （@Value）
 
 使用 `@Value` 注解和在之前的 Spring 中配置文件的 `<bean>` 便签中进行配置基本相同，原来我们会这样配置一个bean：
 
@@ -206,7 +203,7 @@ Hero{name='Ashe', atk=20, def=20, isAlive=null, abilities=null, equipments=null,
  
 可以发现我们注解了的三个值都成功的注入到了对象中。
 
-## 4. @Value 和 @ConfigurationProperties 的区别
+# 4. @Value 和 @ConfigurationProperties 的区别
 
 |           | `@Value`             | `@ConfigurationProperties` |
 | --------- | -------------------- | -------------------------- |
@@ -217,7 +214,7 @@ Hero{name='Ashe', atk=20, def=20, isAlive=null, abilities=null, equipments=null,
 
 *松散绑定指的是 `lastName` = `last-name`
 
-## 5. @PropertySource 和 @ImportResource
+# 5. @PropertySource 和 @ImportResource
 
 如果所有配置都写在 `application.properties` 里，会显得配置文件过于复杂或者庞大。此时我们可以使用 `@PropertySource` 来指定要读取的配置文件。刚才我们把所有的 `Person` 类的属性写在了 `application.yml` 里。现在我们可以把内容改成 `properties` 的格式，然后放入 `person.properties` 文件中：
 
@@ -291,7 +288,7 @@ This is a hello from hello service
 
 这个组件就通过我们的配置类加载进来了。
 
-## 6. 配置文件占位符
+# 6. 配置文件占位符
 
 共有两种，一种是随机数占位符，还有一种时属性配置占位符。我们分别举例。
 
@@ -319,7 +316,7 @@ Hero{name='Ashe8a1189c9-2740-4b6e-b85b-14de42bdfb42', atk=-156092609, def=20, is
 
 可以观察到生成的UUID，随机整数的ATK，以及和ATK相同的Waepon ATK。由于 `hero.at` 这个属性不存在，`weapon.def` 被设置成了默认值10。
 
-## 7. Profile
+# 7. Profile
 
 在实际开发过程中经常牵涉到不同环境的切换（生产/开发/测试）。共有两种方法可以实现多profile。
 

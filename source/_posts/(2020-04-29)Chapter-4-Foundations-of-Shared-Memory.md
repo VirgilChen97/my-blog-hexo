@@ -20,6 +20,8 @@ public interface Register<T>{
 }
 ```
 
+<!--more-->
+
 ## 寄存器的安全性 Safe / Regular / Atomic
 
 **Safe**
