@@ -1,7 +1,9 @@
 ---
 title: SpringBoot 日志
 date: 2020-06-13 13:03:37
-tags: Spring, SpringBoot
+tags: 
+    - Spring
+    - SpringBoot
 categories: 找工作
 ---
 

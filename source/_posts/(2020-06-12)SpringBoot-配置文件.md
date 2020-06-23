@@ -1,7 +1,9 @@
 ---
 title: SpringBoot 配置文件
 date: 2020-06-12 17:49:12
-tags: Spring, SpringBoot
+tags: 
+    - Spring
+    - SpringBoot
 categories: 找工作
 ---
 # 1. yaml 语法

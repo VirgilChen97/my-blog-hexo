@@ -1,7 +1,9 @@
 ---
 title: SpringBoot 入门
 date: 2020-06-12 16:48:38
-tags: Spring, SpringBoot
+tags: 
+    - Spring
+    - SpringBoot
 categories: 找工作
 ---
 
