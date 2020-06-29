@@ -2,8 +2,7 @@
 title: React Router 学习
 toc: true
 date: 2020-06-26 16:03:51
-tags:
-    - React
+tags: React
 categories: 找工作
 ---
 
@@ -240,5 +239,157 @@ const User = () => {
 
 可以看到 `url` 的值是具体的 `"/Users/Alice"`，而 `path` 的值则是 `"/Users/:userId"`。
 
-未完待续
+## 重定向
+
+Web应用中重定向是一个很常见的操作，例如登录完成后跳转到首页，又或是未登录时自动跳转到登录页。在 react router 中有多种方式可以实现重定向。
+
+1. 通过渲染 `redirect` 组件
+2. 通过 `history`
+
+我们通过例子来学习这两种方法，我们模拟一下登录认证的过程。在 component 下创建一个新的 AuthExample.js。首先我们引入需要的包：
+
+```js
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  Redirect,
+  useHistory,
+  useLocation
+} from "react-router-dom";
+```
+
+我们模拟的情况是一个网站中存在公共页面，也就是无需登录就可以访问的页面，同时还有私有页面，也就是必须登录才能访问的页面。如果在未登录的情况下访问私有页面，则会自动跳转到登录页。首先我们先编写一个模拟的认证功能：
+
+```js
+const fakeAuth = {
+	isAuthenticated: false,
+	// cb 为认证完成后的回调函数
+	authenticate(cb) {
+		fakeAuth.isAuthenticated = true;
+		setTimeout(cb, 100); // fake async
+	},
+	signout(cb) {
+		fakeAuth.isAuthenticated = false;
+		setTimeout(cb, 100);
+	}
+};
+```
+
+接着我们编写页面的大概结构：
+
+```js
+const AuthExample = () => {
+  return (
+    <Router>
+      <div>
+        <ul>
+          <li>
+            <Link to="/public">Public Page</Link>
+          </li>
+          <li>
+            <Link to="/protected">Protected Page</Link>
+          </li>
+        </ul>
+
+        <Switch>
+          <Route path="/public">
+            <PublicPage />
+          </Route>
+          <Route path="/login">
+            <LoginPage />
+          </Route>
+		  {/*一个对<Route>组件的包装，见后文*/}
+          <PrivateRoute path="/protected">
+            <ProtectedPage />
+          </PrivateRoute>
+        </Switch>
+      </div>
+    </Router>
+  );
+}
+```
+
+你可能发现了 `PrivateRoute` 这个组件，他是我们对于普通 `Route` 组件的封装，其中包含了判断是否登录的逻辑：
+
+```js
+const PrivateRoute = ({ children, ...rest }) => {
+	// Route 的 render 属性需要传入一个函数返回需要render的内容
+	// 会自动传入 location 变量，即用户现在所在的路径
+	const handleRender = ({location}) => {
+		if(fakeAuth.isAuthenticated){
+			// 如果登录了就渲染 childre
+			return children
+		}else{
+			// 第一种方式：如果未登录就渲染 <Redirect> 进行重定向
+			return (<Redirect
+				to={{
+					// 把现在的位置放到 /login 的state中，方便登陆完成后跳转回来
+					pathname: "/login",
+					state: { from: location }
+				}}
+			/>)
+		}
+	}
+	return (
+		<Route
+			{...rest}
+			render={handleRender}
+		/>
+	);
+}
+```
+
+接下来则是我们的公共页，私有页和登录页：
+
+```js
+function PublicPage() {
+	return <h3>Public</h3>;
+}
+
+function ProtectedPage() {
+	return <h3>Protected</h3>;
+}
+
+function LoginPage() {
+	let history = useHistory();
+	let location = useLocation();
+
+	// 判断当前 /login 的 state 中是否有 from，如果没有就设置为 "/"
+	let { from } = location.state || { from: { pathname: "/" } };
+	let login = () => {
+		fakeAuth.authenticate(() => {
+			// 通过History进行跳转到from的页面
+			history.replace(from);
+		});
+	};
+
+	return (
+		<div>
+			<p>You must log in to view the page at {from.pathname}</p>
+			<button onClick={login}>Log in</button>
+		</div>
+	);
+}
+```
+
+运行项目，你会发现点击 Protected Page 会自动跳转到登录页面，点击登录按钮后，又会自动跳转回 Protected Page.
+
+## 页面不存在
+
+如果用户访问不存在的路径，我们可以通过 Route 的匹配规则来捕捉所有不存在的路径：
+
+```js
+<Route path="*">
+	<NoMatch />
+</Route>
+```
+
+
+
+
+
+
 
