@@ -35,10 +35,10 @@ npx create-react-app <项目名称>
 ```js
 import React from 'react'
 import {
-	BrowserRouter as Router,
-	Switch,
-	Route,
-	Link
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
 } from 'react-router-dom'
 ```
 
@@ -46,36 +46,36 @@ import {
 
 ```js
 const AppRouter = () => {
-	return (
-		<Router>
-			<div>
-				<nav>
-					<ul>
-						<li>
-							<Link to="/">Home</Link>
-						</li>
-						<li>
-							<Link to="/about">About</Link>
-						</li>
-						<li>
-							<Link to="/Users">Users</Link>
-						</li>
-					</ul>
-				</nav>
-				<Switch>
-					<Route path="/about">
-						<About />
-					</Route>
-					<Route path="/Users">
-						<Users />
-					</Route>
-					<Route path="/">
-						<Home />
-					</Route>
-				</Switch>
-			</div>
-		</Router>
-	)
+  return (
+    <Router>
+      <div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/about">About</Link>
+            </li>
+            <li>
+              <Link to="/Users">Users</Link>
+            </li>
+          </ul>
+        </nav>
+        <Switch>
+          <Route path="/about">
+            <About />
+          </Route>
+          <Route path="/Users">
+            <Users />
+          </Route>
+          <Route path="/">
+            <Home />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
+  )
 }
 ```
 
@@ -83,15 +83,15 @@ const AppRouter = () => {
 
 ```js
 const About = () => {
-	return <h2>About</h2>
+  return <h2>About</h2>
 }
 
 const Home = () => {
-	return <h2>Home</h2>
+  return <h2>Home</h2>
 }
 
 const Users = () => {
-	return <h2>Users</h2>
+  return <h2>Users</h2>
 }
 ```
 
@@ -135,32 +135,32 @@ import {
 
 ```js
 const Users = () => {
-	// 通过 Hook 获取 match
-	let match = useRouteMatch()
-	let users = ['Alice', 'Bob','Jimmy']
-	console.log(match)
-	return (
-		<div>
-			<h2>Users</h2>
-			<ul>
-				{/*在User上循环输出链接*/}
-				{users.map(user => {
-					return (
-					<li key={user} >
-						<Link to={`${match.url}/${user}`}>{user}</Link>
-					</li>
-				)})}
-			</ul>
-			<Switch>
-			<Route path={`${match.path}/:userId`}>
-				<User />
-			</Route>
-			<Route path={`${match.path}`}>
-				<h3>Please select a user</h3>
-			</Route>
-		</Switch>
-		</div>
-	)
+  // 通过 Hook 获取 match
+  let match = useRouteMatch()
+  let users = ['Alice', 'Bob','Jimmy']
+  console.log(match)
+  return (
+    <div>
+      <h2>Users</h2>
+      <ul>
+        {/*在User上循环输出链接*/}
+        {users.map(user => {
+          return (
+          <li key={user} >
+            <Link to={`${match.url}/${user}`}>{user}</Link>
+          </li>
+        )})}
+      </ul>
+      <Switch>
+      <Route path={`${match.path}/:userId`}>
+        <User />
+      </Route>
+      <Route path={`${match.path}`}>
+        <h3>Please select a user</h3>
+      </Route>
+    </Switch>
+    </div>
+  )
 }
 ```
 
@@ -168,9 +168,9 @@ const Users = () => {
 
 ```js
 const User = () => {
-	// 通过 Hook 获取 路径变量
-	let { userId } = useParams();
-	return <h3>User name: {userId}</h3>
+  // 通过 Hook 获取 路径变量
+  let { userId } = useParams();
+  return <h3>User name: {userId}</h3>
 }
 ```
 
@@ -187,7 +187,7 @@ const User = () => {
 ```js
 let match = useRouteMatch()
 <Route path={`${match.path}/:userId`}>
-    <User />
+  <User />
 </Route>
 ```
 
@@ -227,11 +227,11 @@ let match = useRouteMatch()
 
 ```js
 const User = () => {
-	// 通过 Hook 获取 路径变量
-	let { userId } = useParams();
-	let match = useRouteMatch();
-	console.log(match)
-	return <h3>User name: {userId}</h3>
+  // 通过 Hook 获取 路径变量
+  let { userId } = useParams();
+  let match = useRouteMatch();
+  console.log(match)
+  return <h3>User name: {userId}</h3>
 }
 ```
 
@@ -265,16 +265,16 @@ import {
 
 ```js
 const fakeAuth = {
-	isAuthenticated: false,
-	// cb 为认证完成后的回调函数
-	authenticate(cb) {
-		fakeAuth.isAuthenticated = true;
-		setTimeout(cb, 100); // fake async
-	},
-	signout(cb) {
-		fakeAuth.isAuthenticated = false;
-		setTimeout(cb, 100);
-	}
+  isAuthenticated: false,
+  // cb 为认证完成后的回调函数
+  authenticate(cb) {
+    fakeAuth.isAuthenticated = true;
+    setTimeout(cb, 100); // fake async
+  },
+  signout(cb) {
+    fakeAuth.isAuthenticated = false;
+    setTimeout(cb, 100);
+  }
 };
 ```
 
@@ -301,7 +301,7 @@ const AuthExample = () => {
           <Route path="/login">
             <LoginPage />
           </Route>
-		  {/*一个对<Route>组件的包装，见后文*/}
+          {/*一个对<Route>组件的包装，见后文*/}
           <PrivateRoute path="/protected">
             <ProtectedPage />
           </PrivateRoute>
@@ -316,29 +316,29 @@ const AuthExample = () => {
 
 ```js
 const PrivateRoute = ({ children, ...rest }) => {
-	// Route 的 render 属性需要传入一个函数返回需要render的内容
-	// 会自动传入 location 变量，即用户现在所在的路径
-	const handleRender = ({location}) => {
-		if(fakeAuth.isAuthenticated){
-			// 如果登录了就渲染 childre
-			return children
-		}else{
-			// 第一种方式：如果未登录就渲染 <Redirect> 进行重定向
-			return (<Redirect
-				to={{
-					// 把现在的位置放到 /login 的state中，方便登陆完成后跳转回来
-					pathname: "/login",
-					state: { from: location }
-				}}
-			/>)
-		}
-	}
-	return (
-		<Route
-			{...rest}
-			render={handleRender}
-		/>
-	);
+  // Route 的 render 属性需要传入一个函数返回需要render的内容
+  // 会自动传入 location 变量，即用户现在所在的路径
+  const handleRender = ({location}) => {
+    if(fakeAuth.isAuthenticated){
+      // 如果登录了就渲染 childre
+      return children
+    }else{
+      // 第一种方式：如果未登录就渲染 <Redirect> 进行重定向
+      return (<Redirect
+        to={{
+          // 把现在的位置放到 /login 的state中，方便登陆完成后跳转回来
+          pathname: "/login",
+          state: { from: location }
+        }}
+      />)
+    }
+  }
+  return (
+    <Route
+      {...rest}
+      render={handleRender}
+    />
+  );
 }
 ```
 
@@ -346,32 +346,32 @@ const PrivateRoute = ({ children, ...rest }) => {
 
 ```js
 function PublicPage() {
-	return <h3>Public</h3>;
+  return <h3>Public</h3>;
 }
 
 function ProtectedPage() {
-	return <h3>Protected</h3>;
+  return <h3>Protected</h3>;
 }
 
 function LoginPage() {
-	let history = useHistory();
-	let location = useLocation();
+  let history = useHistory();
+  let location = useLocation();
 
-	// 判断当前 /login 的 state 中是否有 from，如果没有就设置为 "/"
-	let { from } = location.state || { from: { pathname: "/" } };
-	let login = () => {
-		fakeAuth.authenticate(() => {
-			// 通过History进行跳转到from的页面
-			history.replace(from);
-		});
-	};
+  // 判断当前 /login 的 state 中是否有 from，如果没有就设置为 "/"
+  let { from } = location.state || { from: { pathname: "/" } };
+  let login = () => {
+    fakeAuth.authenticate(() => {
+      // 通过History进行跳转到from的页面
+      history.replace(from);
+    });
+  };
 
-	return (
-		<div>
-			<p>You must log in to view the page at {from.pathname}</p>
-			<button onClick={login}>Log in</button>
-		</div>
-	);
+  return (
+    <div>
+      <p>You must log in to view the page at {from.pathname}</p>
+      <button onClick={login}>Log in</button>
+    </div>
+  );
 }
 ```
 
@@ -383,7 +383,7 @@ function LoginPage() {
 
 ```js
 <Route path="*">
-	<NoMatch />
+  <NoMatch />
 </Route>
 ```
 
